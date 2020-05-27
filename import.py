@@ -42,34 +42,39 @@ def importLogin(driver):
         print("No login Button found. Edit program")
         sys.exit()
 def importDeleter(driver,IDs):
-    print(IDs)
+    tracker=0
     for ID in IDs:
+        tracker+=1
+        print('('+str(tracker)+'/'+str(len(IDs))+') '+ID)
         url='https://app.import.io/dash/extractors/'+ID
         driver.get(url)
         while(driver.current_url==url):
             time.sleep(.5)
         if driver.current_url!=url+'/history':
-            print("ID: "+ID+" DOES NOT EXIST, moving on...")
             continue
         else:
             try:
                 deleteButton=driver.find_element_by_xpath('//*[@id="lightning"]/div/div/div/div[2]/section/div/section/div[2]/div/div/header/div[2]/div[2]/span[3]/button')
             except:
-                print("ID "+ID+" IS DOES NOT EXIST, moving on...")
                 continue
             if "delete" not in deleteButton.text.lower():
                 print("PROGRAM NEEDS TO UPDATED. XPATH OF DELETE BUTTON SEEMS TO HAVE MOVED")
                 break
             else:
                 deleteButton.click()
-                confirm=driver.find_element_by_xpath('/html/body/div[7]/div[2]/div/div/div[3]/div/button[2]')
-                if 'delete' not in confirm.text:
-                    print('Check program to see if xpath of "Confirm Delete" button has changed!')
-                    break
-                else:
-                    confirm.click()
-                    while (driver.current_url == url):
-                        time.sleep(.5)
+                confirm=driver.find_elements_by_tag_name('button')
+                for element in confirm:
+                    try:
+                        if "delete my extractor" in element.text.lower():
+                            element.click()
+                            while (driver.current_url == url):
+                                time.sleep(.5)
+                            print(ID+' deleted ('+str(tracker)+'/'+str(len(IDs))+')')
+                            time.sleep(1)
+                            break
+                    except:
+                        continue
+
 
 print("Make an excel sheet and type a column of your IDs. Copy that column and paste it here now.\nThen, press enter twice to continue!\n>> ")
 IDs=[]
